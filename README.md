@@ -4,9 +4,9 @@
 
 ```
 blog-server/
-├── api/          # REST API 모듈 (Spring Boot 메인)
-├── board/        # 게시판 도메인 모듈 
-├── login/        # GitHub OAuth2 인증 모듈
+├── blog-api/          # REST API 모듈 (Spring Boot 메인)
+├── blog-board/        # 게시판 도메인 모듈 
+├── blog-login/        # GitHub OAuth2 인증 모듈
 └── buildSrc/     # Gradle 공통 설정
 ```
 

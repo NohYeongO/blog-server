@@ -1,0 +1,9 @@
+plugins {
+    id 'blog-server.java-conventions'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation libs.jackson.databind
+    implementation libs.jackson.datatype.jsr310
+}

@@ -1,0 +1,10 @@
+plugins {
+    alias(libs.plugins.spring.boot)
+    id 'blog-server.java-conventions'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation project(':login')
+    implementation project(':board')
+}

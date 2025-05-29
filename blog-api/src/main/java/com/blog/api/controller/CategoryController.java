@@ -21,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "https://nohyeongo.github.io", allowCredentials = "true")
 public class CategoryController {
 
     private final CategoryService categoryService;

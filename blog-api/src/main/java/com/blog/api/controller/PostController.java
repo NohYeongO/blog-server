@@ -29,6 +29,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "https://nohyeongo.github.io", allowCredentials = "true")
 public class PostController {
 
     private final PostService postService;

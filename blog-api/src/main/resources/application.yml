@@ -23,8 +23,8 @@ spring:
       client:
         registration:
           github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
             scope: read:user
         provider:
           github:
@@ -44,4 +44,4 @@ logging:
     org.springframework.web.servlet.DispatcherServlet: DEBUG
 
 blog:
-  admin-github-id: ${ADMIN_GITHUB_ID}
+  admin-github-id: ${ADMIN_ID}

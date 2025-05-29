@@ -13,6 +13,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "https://nohyeongo.github.io", allowCredentials = "true")
 public class AuthController {
 
     @GetMapping("/user")

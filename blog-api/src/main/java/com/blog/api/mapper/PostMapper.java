@@ -61,6 +61,7 @@ public class PostMapper {
                 .id(postSimpleResponseDto.getId())
                 .title(postSimpleResponseDto.getTitle())
                 .author(postSimpleResponseDto.getAuthor())
+                .content(postSimpleResponseDto.getContent())
                 .published(postSimpleResponseDto.isPublished())
                 .category(categoryMapper.toResponse(postSimpleResponseDto.getCategory()))
                 .createdDate(postSimpleResponseDto.getCreatedDate())

@@ -16,8 +16,6 @@ public class PostCreateRequest {
     @NotBlank(message = "내용을 입력해주세요.")
     private String content;
 
-    private String imageUrl;
-
     private Boolean published;
 
     @NotBlank(message = "카테고리 이름을 입력해주세요.")

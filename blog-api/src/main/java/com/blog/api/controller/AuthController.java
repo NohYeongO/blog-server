@@ -7,19 +7,31 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     @GetMapping("/user")
-    public ResponseEntity<LoginResponse> getCurrentUser(@AuthenticationPrincipal OAuth2User principal) {
-        return ResponseEntity.ok(LoginResponse.builder()
-                .authenticated(true)
-                .githubId(principal.getAttribute("login"))
-                .name(principal.getAttribute("name"))
-                .role("ADMIN")
-                .build());
+    public ResponseEntity<Void> redirectWithUserInfo(@AuthenticationPrincipal OAuth2User principal) {
+        String githubId = principal.getAttribute("login");
+        String name = principal.getAttribute("name");
+        String role = "ADMIN";
+
+        URI redirectUri = UriComponentsBuilder.fromUriString("http://localhost:8000")
+                .queryParam("githubId", githubId)
+                .queryParam("name", name)
+                .queryParam("role", role)
+                .build()
+                .encode()
+                .toUri();
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(redirectUri)
+                .build();
     }
 
     @GetMapping("/login-error")

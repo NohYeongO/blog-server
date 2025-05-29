@@ -11,12 +11,8 @@ public class PostSummaryResponse {
     private Long id;
     private String title;
     private String author;
-    private String imageUrl;
+    private String content;
     private boolean published;
     private CategoryResponse category;
     private LocalDateTime createdDate;
-    
-    public String getCategoryName() {
-        return category != null ? category.getName() : null;
-    }
 }

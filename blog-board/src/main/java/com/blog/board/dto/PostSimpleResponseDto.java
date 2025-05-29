@@ -16,6 +16,7 @@ public class PostSimpleResponseDto {
     private Long id;
     private String title;
     private String author;
+    private String content;
     private boolean published;
     private CategoryDto category;
     private LocalDateTime createdDate;
@@ -25,6 +26,7 @@ public class PostSimpleResponseDto {
                 .id(post.getPostId())
                 .title(post.getTitle())
                 .author(post.getAuthor())
+                .content(post.getContent())
                 .published(post.isPublished())
                 .category(CategoryDto.fromEntity(post.getCategory()))
                 .createdDate(post.getCreatedDate())

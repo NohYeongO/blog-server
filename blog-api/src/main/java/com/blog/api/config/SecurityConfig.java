@@ -5,11 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.web.util.UriComponentsBuilder;
+
 
 @Slf4j
 @Configuration
@@ -21,6 +24,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> {
                 auth
@@ -29,7 +33,7 @@ public class SecurityConfig {
             .oauth2Login(oauth2 -> {
                 oauth2
                     .successHandler(oauth2SuccessHandler())
-                    .failureUrl("/api/auth/login-error?reason=oauth_failure");
+                    .failureUrl("https://nohyeongo.github.io/api/auth/login-error.html?reason=oauth_failure");
             })
             .logout(logout -> {
                 logout
@@ -57,12 +61,24 @@ public class SecurityConfig {
             log.info("🔑 관리자 권한: {}", isAdmin);
 
             if (!isAdmin) {
-                log.warn("❌ 관리자 권한 없음 - 접근 거부");
-                response.sendRedirect("/api/auth/login-error?reason=not_admin");
+                String failUrl = UriComponentsBuilder
+                        .fromUriString("https://nohyeongo.github.io/login/error.html")
+                        .queryParam("reason", "not_admin")
+                        .build()
+                        .toUriString();
+                response.sendRedirect(failUrl);
                 return;
             }
-            
-            response.sendRedirect("/api/auth/user");
+
+            String successUrl = UriComponentsBuilder
+                    .fromUriString("https://nohyeongo.github.io/login/success.html")
+                    .queryParam("githubId", githubId)
+                    .queryParam("name", name)
+                    .queryParam("role", "ADMIN")
+                    .build()
+                    .toUriString();
+
+            response.sendRedirect(successUrl);
         };
     }
 }

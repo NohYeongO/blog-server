@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: blog-api
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope: ${GITHUB_SCOPE}
+        provider:
+          github:
+            authorization-uri: ${GITHUB_AUTHORIZATION_URI}
+            token-uri: ${GITHUB_TOKEN_URI}
+            user-info-uri: ${GITHUB_USER_INFO_URI}
+            user-name-attribute: ${GITHUB_USER_NAME_ATTRIBUTE}
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.security.web: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+
+blog:
+  admin-github-id: ${BLOG_ADMIN_GITHUB_ID}
+
+debug: true

@@ -27,7 +27,6 @@ public class PostResponseDto {
                 .id(post.getPostId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .author(post.getAuthor())
                 .published(post.isPublished())
                 .category(CategoryDto.fromEntity(post.getCategory()))
                 .createdDate(post.getCreatedDate())

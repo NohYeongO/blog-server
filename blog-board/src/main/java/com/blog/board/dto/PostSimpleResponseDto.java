@@ -25,7 +25,6 @@ public class PostSimpleResponseDto {
         return PostSimpleResponseDto.builder()
                 .id(post.getPostId())
                 .title(post.getTitle())
-                .author(post.getAuthor())
                 .content(post.getContent())
                 .published(post.isPublished())
                 .category(CategoryDto.fromEntity(post.getCategory()))

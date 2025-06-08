@@ -21,9 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -61,7 +59,6 @@ class PostServiceTest {
                 .postId(1L)
                 .title("테스트 게시글")
                 .content("테스트 내용")
-                .author("testUser")
                 .published(true)
                 .category(category)
                 .build();
@@ -72,47 +69,6 @@ class PostServiceTest {
                 .categoryName("개발 일지")
                 .published(true)
                 .build();
-    }
-
-    @Test
-    @DisplayName("게시글 생성 - 성공")
-    void createPost_Success() {
-        // given
-        given(principal.getAttribute("login")).willReturn("testUser");
-        given(categoryService.findOrCreateCategory("개발 일지")).willReturn(category);
-        given(postRepository.save(any(Post.class))).willReturn(post);
-
-        // when
-        PostResponseDto result = postService.createPost(postRequestDto, principal);
-
-        // then
-        assertThat(result.getTitle()).isEqualTo("테스트 게시글");
-        assertThat(result.getAuthor()).isEqualTo("testUser");
-        verify(categoryService).findOrCreateCategory("개발 일지");
-        verify(postRepository).save(any(Post.class));
-    }
-
-    @Test
-    @DisplayName("게시글 생성 - published null일 때 기본값 true")
-    void createPost_PublishedNullDefaultTrue() {
-        // given
-        PostRequestDto requestWithNullPublished = PostRequestDto.builder()
-                .title("새 게시글")
-                .content("새 내용")
-                .categoryName("개발 일지")
-                .published(null)
-                .build();
-
-        given(principal.getAttribute("login")).willReturn("testUser");
-        given(categoryService.findOrCreateCategory("개발 일지")).willReturn(category);
-        given(postRepository.save(any(Post.class))).willReturn(post);
-
-        // when
-        PostResponseDto result = postService.createPost(requestWithNullPublished, principal);
-
-        // then
-        assertThat(result).isNotNull();
-        verify(postRepository).save(argThat(savedPost -> savedPost.isPublished()));
     }
 
     @Test

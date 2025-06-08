@@ -15,7 +15,6 @@ import com.blog.api.exception.AccessDeniedException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -40,17 +39,16 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostCreateRequest request,
                                                    @AuthenticationPrincipal OAuth2User principal) {
-        log.info("🎯 POST /api/posts 메소드 진입 - principal: {}", principal != null ? principal.getAttribute("login") : "null");
-        
-        if (!isAdminUser(principal)) {
-            log.warn("❌ Admin 권한 없음 - principal: {}", principal);
+        log.info("🎯 POST /api/posts 요청 - principal: {}", principal != null ? principal.getAttribute("login") : "null");
+        if (principal == null) {
+            log.warn("❌ 인증되지 않은 사용자의 게시글 작성 시도");
             throw new AccessDeniedException();
         }
-        
-        log.info("✅ 게시글 생성 시작 - 제목: {}", request.getTitle());
+        if (!isAdminUser(principal)) {
+            throw new AccessDeniedException();
+        }
+
         PostResponse response = postMapper.toResponse(postService.createPost(postMapper.toRequestDto(request), principal));
-        log.info("🎉 게시글 생성 완료 - ID: {}", response.getId());
-        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -58,20 +56,28 @@ public class PostController {
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long postId,
                                                    @RequestBody @Valid PostUpdateRequest request,
                                                    @AuthenticationPrincipal OAuth2User principal) {
+        if (principal == null) {
+            log.warn("❌ 인증되지 않은 사용자의 게시글 수정 시도");
+            throw new AccessDeniedException();
+        }
         if (!isAdminUser(principal)) {
             throw new AccessDeniedException();
         }
+        log.info("✅ 게시글 수정 시작 - ID: {}, 수정자: {}", postId, principal.getAttribute("login"));
         return ResponseEntity.ok(postMapper.toResponse(postService.updatePost(postId, postMapper.toRequestDto(request))));
     }
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(@PathVariable Long postId,
                                            @AuthenticationPrincipal OAuth2User principal) {
+        if (principal == null) {
+            log.warn("❌ 인증되지 않은 사용자의 게시글 삭제 시도");
+            throw new AccessDeniedException();
+        }
         if (!isAdminUser(principal)) {
             throw new AccessDeniedException();
         }
         postService.deletePost(postId);
-        log.info("게시글 삭제 API 호출 성공 - ID: {}", postId);
         return ResponseEntity.noContent().build();
     }
 
@@ -88,6 +94,22 @@ public class PostController {
         PageResponseDto<PostSimpleResponseDto> pageResponseDto = postService.getPosts(categoryName, pageable, isAdmin);
         List<PostSummaryResponse> content = postMapper.toSummaryResponseList(pageResponseDto.getContent());
         return ResponseEntity.ok(pageMapper.toResponse(pageResponseDto, content));
+    }
+
+    @GetMapping("/auth/status")
+    public ResponseEntity<?> getAuthStatus(@AuthenticationPrincipal OAuth2User principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("authenticated", false, "message", "로그인이 필요합니다"));
+        }
+
+        boolean isAdmin = isAdminUser(principal);
+        return ResponseEntity.ok(Map.of(
+            "authenticated", true,
+            "githubId", principal.getAttribute("login"),
+            "name", principal.getAttribute("name"),
+            "isAdmin", isAdmin
+        ));
     }
 
     private boolean isAdminUser(OAuth2User principal) {

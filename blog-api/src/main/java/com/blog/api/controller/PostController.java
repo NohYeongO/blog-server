@@ -40,10 +40,18 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostCreateRequest request,
                                                    @AuthenticationPrincipal OAuth2User principal) {
+        log.info("🎯 POST /api/posts 메소드 진입 - principal: {}", principal != null ? principal.getAttribute("login") : "null");
+        
         if (!isAdminUser(principal)) {
+            log.warn("❌ Admin 권한 없음 - principal: {}", principal);
             throw new AccessDeniedException();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toResponse(postService.createPost(postMapper.toRequestDto(request), principal)));
+        
+        log.info("✅ 게시글 생성 시작 - 제목: {}", request.getTitle());
+        PostResponse response = postMapper.toResponse(postService.createPost(postMapper.toRequestDto(request), principal));
+        log.info("🎉 게시글 생성 완료 - ID: {}", response.getId());
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{postId}")
@@ -80,22 +88,6 @@ public class PostController {
         PageResponseDto<PostSimpleResponseDto> pageResponseDto = postService.getPosts(categoryName, pageable, isAdmin);
         List<PostSummaryResponse> content = postMapper.toSummaryResponseList(pageResponseDto.getContent());
         return ResponseEntity.ok(pageMapper.toResponse(pageResponseDto, content));
-    }
-
-    @GetMapping("/auth/status")
-    public ResponseEntity<?> getAuthStatus(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("authenticated", false, "message", "로그인이 필요합니다"));
-        }
-        
-        boolean isAdmin = isAdminUser(principal);
-        return ResponseEntity.ok(Map.of(
-            "authenticated", true,
-            "githubId", principal.getAttribute("login"),
-            "name", principal.getAttribute("name"),
-            "isAdmin", isAdmin
-        ));
     }
 
     private boolean isAdminUser(OAuth2User principal) {

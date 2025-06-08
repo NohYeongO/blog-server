@@ -34,6 +34,8 @@ public class SecurityConfig {
                     // 읽기 전용 엔드포인트는 인증 없이 접근 허용
                     .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/**").permitAll()
+                    // 인증 상태 확인은 항상 허용 (인증되지 않은 사용자도 접근 가능)
+                    .requestMatchers("/api/auth/**").permitAll()
                     // 쓰기 관련 엔드포인트는 인증 필요
                     .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
                     .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()

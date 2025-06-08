@@ -25,13 +25,12 @@ public class PostService {
     private final CategoryService categoryService;
 
     @Transactional
-    public PostResponseDto createPost(PostRequestDto requestDto, OAuth2User principal) {
+    public PostResponseDto createPost(PostRequestDto requestDto) {
         boolean isPublished = requestDto.getPublished() != null ? requestDto.getPublished() : true;
         return PostResponseDto.fromEntity(
                     postRepository.save(Post.builder()
                         .title(requestDto.getTitle())
                         .content(requestDto.getContent())
-                        .author(principal.getAttribute("login"))
                         .published(isPublished)
                         .category(categoryService.findOrCreateCategory(requestDto.getCategoryName()))
                         .build()

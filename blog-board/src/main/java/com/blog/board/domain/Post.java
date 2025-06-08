@@ -23,9 +23,6 @@ public class Post extends BaseTimeEntity {
     @Column(name="content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name="author")
-    private String author;
-
     @Column(name="published", nullable = false)
     private boolean published;
 

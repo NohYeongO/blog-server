@@ -11,8 +11,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.http.HttpMethod;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 @Slf4j
@@ -21,6 +23,7 @@ import org.springframework.http.HttpMethod;
 public class SecurityConfig {
 
     private final AdminValidation adminValidation;
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -43,12 +46,35 @@ public class SecurityConfig {
                     // 그 외 모든 요청은 인증 필요
                     .anyRequest().authenticated();
             })
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(apiAuthenticationEntryPoint())
+            )
             .oauth2Login(oauth2 -> {
                 oauth2
                     .successHandler(oauth2SuccessHandler())
                     .failureUrl("https://nohyeongo.github.io/api/auth/login-error.html?reason=oauth_failure");
             })
             .build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint apiAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
+            String requestURI = request.getRequestURI();
+            String acceptHeader = request.getHeader("Accept");
+            
+            // API 요청인지 확인
+            if (requestURI.startsWith("/api/")) {
+                log.warn("🚫 API 요청에 대한 인증 실패: {}", requestURI);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"error\": \"인증이 필요합니다. 먼저 로그인해주세요.\", \"loginUrl\": \"/oauth2/authorization/github\"}");
+            } else {
+                // 웹 페이지 요청인 경우 OAuth2 로그인 페이지로 리다이렉트
+                response.sendRedirect("/oauth2/authorization/github");
+            }
+        };
     }
 
     @Bean

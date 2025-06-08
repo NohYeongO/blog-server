@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -79,6 +80,22 @@ public class PostController {
         PageResponseDto<PostSimpleResponseDto> pageResponseDto = postService.getPosts(categoryName, pageable, isAdmin);
         List<PostSummaryResponse> content = postMapper.toSummaryResponseList(pageResponseDto.getContent());
         return ResponseEntity.ok(pageMapper.toResponse(pageResponseDto, content));
+    }
+
+    @GetMapping("/auth/status")
+    public ResponseEntity<?> getAuthStatus(@AuthenticationPrincipal OAuth2User principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("authenticated", false, "message", "로그인이 필요합니다"));
+        }
+        
+        boolean isAdmin = isAdminUser(principal);
+        return ResponseEntity.ok(Map.of(
+            "authenticated", true,
+            "githubId", principal.getAttribute("login"),
+            "name", principal.getAttribute("name"),
+            "isAdmin", isAdmin
+        ));
     }
 
     private boolean isAdminUser(OAuth2User principal) {

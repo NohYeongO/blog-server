@@ -11,6 +11,7 @@ import com.blog.api.validation.AdminValidation;
 import com.blog.board.dto.PageResponseDto;
 import com.blog.board.dto.PostSimpleResponseDto;
 import com.blog.board.service.PostService;
+import com.blog.api.exception.AccessDeniedException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,9 @@ public class PostController {
     @PostMapping
     public ResponseEntity<PostResponse> createPost(@RequestBody @Valid PostCreateRequest request,
                                                    @AuthenticationPrincipal OAuth2User principal) {
+        if (!isAdminUser(principal)) {
+            throw new AccessDeniedException();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toResponse(postService.createPost(postMapper.toRequestDto(request), principal)));
     }
 
@@ -45,12 +49,18 @@ public class PostController {
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long postId,
                                                    @RequestBody @Valid PostUpdateRequest request,
                                                    @AuthenticationPrincipal OAuth2User principal) {
+        if (!isAdminUser(principal)) {
+            throw new AccessDeniedException();
+        }
         return ResponseEntity.ok(postMapper.toResponse(postService.updatePost(postId, postMapper.toRequestDto(request))));
     }
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<Void> deletePost(@PathVariable Long postId,
                                            @AuthenticationPrincipal OAuth2User principal) {
+        if (!isAdminUser(principal)) {
+            throw new AccessDeniedException();
+        }
         postService.deletePost(postId);
         log.info("게시글 삭제 API 호출 성공 - ID: {}", postId);
         return ResponseEntity.noContent().build();

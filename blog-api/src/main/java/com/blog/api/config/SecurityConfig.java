@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.http.HttpMethod;
 
 
 @Slf4j
@@ -27,7 +28,20 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> {
                 auth
-                    .anyRequest().permitAll();
+                    // 읽기 전용 엔드포인트는 인증 없이 접근 허용
+                    .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/**").permitAll()
+                    // 쓰기 관련 엔드포인트는 인증 필요
+                    .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/posts/**").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/categories").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/categories/**").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/categories/**").authenticated()
+                    // OAuth2 로그인 관련 엔드포인트
+                    .requestMatchers("/login/**", "/oauth2/**").permitAll()
+                    // 그 외 모든 요청은 인증 필요
+                    .anyRequest().authenticated();
             })
             .oauth2Login(oauth2 -> {
                 oauth2
@@ -61,6 +75,19 @@ public class SecurityConfig {
                 return;
             }
 
+            // API 요청인지 확인 (Accept 헤더나 요청 경로로 판단)
+            String acceptHeader = request.getHeader("Accept");
+            String requestUrl = request.getRequestURL().toString();
+            
+            if (acceptHeader != null && acceptHeader.contains("application/json")) {
+                // API 요청인 경우 - 원래 요청으로 리다이렉트하지 않고 JSON 응답
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"success\": true, \"message\": \"로그인 성공\"}");
+                return;
+            }
+
+            // 웹 페이지 요청인 경우 기존 로직
             String successUrl = UriComponentsBuilder
                     .fromUriString("https://nohyeongo.github.io/login/success.html")
                     .queryParam("githubId", githubId)
